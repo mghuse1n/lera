@@ -14,7 +14,7 @@ PRODUCTS_IMG_DIR = os.path.join(RESOURCES_DIR, 'products')
 DB_CONFIG = {
     'host': 'localhost',
     'port': 5432,
-    'database': 'postgres',
+    'database': 'chudo_obuv',
     'user': 'postgres',
     'password': '12345678',
 }
@@ -27,7 +27,7 @@ COLOR_ACCENT = '#70B2AF'
 COLOR_LOW_STOCK = '#ff8080'
 
 FONT = 'Calibri'
-FONT_SIZE = 13
+FONT_SIZE = 14
 
 
 # Общий стиль для всех окон
@@ -42,95 +42,94 @@ QMainWindow, QDialog {{
     background-color: {COLOR_BG};
 }}
 
-QPushButton {{
-    background-color: {COLOR_ACCENT};
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-weight: bold;
-    min-height: 20px;
-}}
-QPushButton:hover {{ background-color: #5a9a97; }}
-QPushButton:pressed {{ background-color: #4A8582; }}
-QPushButton:disabled {{ background-color: #cccccc; color: #666; }}
-
+/* Поля ввода — с фоном и большим скруглением */
 QLineEdit, QComboBox, QSpinBox, QTextEdit, QDateEdit {{
-    background-color: white;
-    border: 1px solid #a0d0c0;
-    border-radius: 6px;
-    padding: 6px 10px;
+    background-color: {COLOR_BG2};
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
     min-height: 20px;
 }}
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus,
 QTextEdit:focus, QDateEdit:focus {{
+    background-color: white;
     border: 2px solid {COLOR_ACCENT};
 }}
 
-QComboBox::drop-down {{ border: none; width: 22px; }}
+QComboBox::drop-down {{ border: none; width: 24px; }}
 QComboBox QAbstractItemView {{
     background-color: white;
-    border: 1px solid {COLOR_ACCENT};
-    border-radius: 6px;
+    border: 2px solid {COLOR_ACCENT};
+    border-radius: 8px;
     selection-background-color: {COLOR_BG2};
     padding: 4px;
 }}
 
+/* Таблицы — только нижние линии, без рамки */
 QTableWidget {{
     background-color: white;
-    gridline-color: #e5e5e5;
-    border: 1px solid #cfcfcf;
-    border-radius: 6px;
-    alternate-background-color: #fafafa;
+    gridline-color: transparent;
+    border: none;
     selection-background-color: {COLOR_BG2};
+    selection-color: #333;
+    alternate-background-color: white;
+}}
+QTableWidget::item {{
+    border-bottom: 1px solid #e0e0e0;
+    padding: 6px;
 }}
 QHeaderView::section {{
     background-color: {COLOR_BG2};
     color: #333;
-    padding: 8px 6px;
+    padding: 10px 8px;
     border: none;
-    border-bottom: 1px solid #a0d0c0;
     font-weight: bold;
+    font-size: 13px;
 }}
 
-QScrollBar:vertical {{ background: transparent; width: 10px; }}
+QScrollBar:vertical {{ background: transparent; width: 14px; }}
 QScrollBar::handle:vertical {{
-    background: #b8dcd0; border-radius: 5px; min-height: 30px;
+    background: {COLOR_ACCENT}; border-radius: 7px; min-height: 40px;
 }}
-QScrollBar::handle:vertical:hover {{ background: {COLOR_ACCENT}; }}
+QScrollBar::handle:vertical:hover {{ background: #5a9a97; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
+
+QLabel {{ color: #333; background-color: transparent; }}
 """
 
 
-# Стиль для светлых кнопок
+# Обычные кнопки — плоские, с рамкой, белый фон, цветной текст
 STYLE_SECONDARY = f"""
 QPushButton {{
     background-color: white;
     color: {COLOR_ACCENT};
     border: 2px solid {COLOR_ACCENT};
-    padding: 8px 18px;
-    border-radius: 6px;
+    padding: 10px 22px;
+    border-radius: 10px;
     font-weight: bold;
+    font-size: 13px;
 }}
 QPushButton:hover {{ background-color: {COLOR_BG2}; }}
+QPushButton:pressed {{ background-color: #BBEBD7; }}
 """
 
 
-# Стиль для кнопки удаления
-STYLE_DANGER = """
-QPushButton {
-    background-color: #d9534f;
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
+# Кнопка удаления — плоская, красная рамка, белый фон
+STYLE_DANGER = f"""
+QPushButton {{
+    background-color: white;
+    color: #d9534f;
+    border: 2px solid #d9534f;
+    padding: 10px 22px;
+    border-radius: 10px;
     font-weight: bold;
-}
-QPushButton:hover { background-color: #c9302c; }
+}}
+QPushButton:hover {{ background-color: #fdecec; }}
+QPushButton:pressed {{ background-color: #f9dcdc; }}
 """
 
 
-# Стиль для кнопки как ссылка
+# Кнопка как ссылка — без рамки, подчёркнутая
 STYLE_LINK = f"""
 QPushButton {{
     background-color: transparent;
@@ -141,4 +140,20 @@ QPushButton {{
     text-decoration: underline;
 }}
 QPushButton:hover {{ color: #4A8582; }}
+"""
+
+
+# Основная акцентная кнопка — залитая, для главных действий
+STYLE_PRIMARY = f"""
+QPushButton {{
+    background-color: {COLOR_ACCENT};
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: bold;
+}}
+QPushButton:hover {{ background-color: #5a9a97; }}
+QPushButton:pressed {{ background-color: #4A8582; }}
+QPushButton:disabled {{ background-color: #cccccc; color: #666; }}
 """
