@@ -64,7 +64,7 @@ class ProductCard(QFrame):
     def __init__(self, product, discount, parent=None):
         super().__init__(parent)
         self.product_id = product["id"]
-        self.setFixedWidth(360)
+        self.setMinimumWidth(300)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 14, 14, 14)
@@ -139,7 +139,7 @@ class ProductCard(QFrame):
             """)
 
     def load_image(self, name):
-        size_w = 330
+        size_w = 400
         size_h = 200
         if name:
             path = os.path.join(PRODUCTS_IMG_DIR, name)
@@ -457,6 +457,8 @@ class ShopWindow(QMainWindow):
         self.cards_grid.setSpacing(15)
         self.cards_grid.setContentsMargins(15, 15, 15, 15)
         self.cards_grid.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.cards_grid.setColumnStretch(0, 1)
+        self.cards_grid.setColumnStretch(1, 1)
         scroll.setWidget(container)
 
         return scroll
