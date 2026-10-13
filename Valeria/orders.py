@@ -6,7 +6,9 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem, QVBoxLayout, QMessageBox,
 )
 
-from config import STYLESHEET, STYLE_DANGER, STYLE_SECONDARY
+from config import (
+    STYLESHEET, STYLE_PRIMARY, STYLE_DANGER, STYLE_SECONDARY,
+)
 from db import get_all, get_one, do_query, do_insert
 from utils import discount_for, price_with_discount
 
@@ -67,6 +69,30 @@ SQL_SIZES = """
 """
 
 
+def make_title(text):
+    # Заголовок окна: тёмный текст + акцентная полоска слева
+    from PyQt6.QtWidgets import QWidget
+
+    wrapper = QWidget()
+    wrapper.setStyleSheet("background-color: white;")
+
+    row = QHBoxLayout(wrapper)
+    row.setContentsMargins(15, 12, 15, 12)
+    row.setSpacing(10)
+
+    stripe = QLabel()
+    stripe.setFixedSize(5, 24)
+    stripe.setStyleSheet("background-color: #70B2AF; border-radius: 2px;")
+    row.addWidget(stripe)
+
+    label = QLabel(text)
+    label.setStyleSheet("font-size: 20px; color: #333;")
+    row.addWidget(label)
+    row.addStretch()
+
+    return wrapper
+
+
 class CartWindow(QDialog):
 
     def __init__(self, user, cart, parent=None):
@@ -83,11 +109,13 @@ class CartWindow(QDialog):
 
     def make_interface(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setContentsMargins(0, 0, 0, 15)
+        main_layout.setSpacing(10)
 
-        title = QLabel("Корзина")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        main_layout.addWidget(title)
+        main_layout.addWidget(make_title("Корзина"))
+
+        body = QVBoxLayout()
+        body.setContentsMargins(15, 5, 15, 0)
 
         self.table = QTableWidget()
         headers = ["ID", "Наименование", "Производитель", "Размер", "Кол-во", "Сумма"]
@@ -95,7 +123,7 @@ class CartWindow(QDialog):
         self.table.setHorizontalHeaderLabels(headers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        main_layout.addWidget(self.table, 1)
+        body.addWidget(self.table, 1)
 
         edit_row = QHBoxLayout()
 
@@ -110,16 +138,17 @@ class CartWindow(QDialog):
         edit_row.addWidget(clear_btn)
 
         edit_row.addStretch()
-        main_layout.addLayout(edit_row)
+        body.addLayout(edit_row)
 
         self.total_label = QLabel("Итого: 0.00 руб.")
-        self.total_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #70B2AF;")
+        self.total_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
         self.total_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        main_layout.addWidget(self.total_label)
+        body.addWidget(self.total_label)
 
         bottom = QHBoxLayout()
 
         checkout_btn = QPushButton("Оформить заказ")
+        checkout_btn.setStyleSheet(STYLE_PRIMARY)
         checkout_btn.clicked.connect(self.on_checkout_click)
         bottom.addWidget(checkout_btn)
 
@@ -128,7 +157,8 @@ class CartWindow(QDialog):
         back_btn.clicked.connect(self.reject)
         bottom.addWidget(back_btn)
 
-        main_layout.addLayout(bottom)
+        body.addLayout(bottom)
+        main_layout.addLayout(body)
         self.setLayout(main_layout)
 
     def reload_table(self):
@@ -231,11 +261,13 @@ class OrdersWindow(QDialog):
 
     def make_interface(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setContentsMargins(0, 0, 0, 15)
+        main_layout.setSpacing(10)
 
-        title = QLabel("Список заказов")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        main_layout.addWidget(title)
+        main_layout.addWidget(make_title("Список заказов"))
+
+        body = QVBoxLayout()
+        body.setContentsMargins(15, 5, 15, 0)
 
         self.table = QTableWidget()
         headers = ["Номер", "Дата", "Клиент", "Сумма"]
@@ -245,15 +277,17 @@ class OrdersWindow(QDialog):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.doubleClicked.connect(self.on_open_click)
-        main_layout.addWidget(self.table, 1)
+        body.addWidget(self.table, 1)
 
         bottom = QHBoxLayout()
 
         create_btn = QPushButton("Создать")
+        create_btn.setStyleSheet(STYLE_PRIMARY)
         create_btn.clicked.connect(self.on_create_click)
         bottom.addWidget(create_btn)
 
         open_btn = QPushButton("Открыть")
+        open_btn.setStyleSheet(STYLE_SECONDARY)
         open_btn.clicked.connect(self.on_open_click)
         bottom.addWidget(open_btn)
 
@@ -267,7 +301,8 @@ class OrdersWindow(QDialog):
         back_btn.clicked.connect(self.reject)
         bottom.addWidget(back_btn)
 
-        main_layout.addLayout(bottom)
+        body.addLayout(bottom)
+        main_layout.addLayout(body)
         self.setLayout(main_layout)
 
     def reload_table(self):
@@ -344,11 +379,13 @@ class OrderDetailWindow(QDialog):
 
     def make_interface(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setContentsMargins(0, 0, 0, 15)
+        main_layout.setSpacing(10)
 
-        self.title = QLabel("Просмотр заказа")
-        self.title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        main_layout.addWidget(self.title)
+        main_layout.addWidget(make_title("Просмотр заказа"))
+
+        body = QVBoxLayout()
+        body.setContentsMargins(15, 5, 15, 0)
 
         top_row = QHBoxLayout()
 
@@ -361,7 +398,7 @@ class OrderDetailWindow(QDialog):
         self.client_label = QLabel("")
         top_row.addWidget(self.client_label)
 
-        main_layout.addLayout(top_row)
+        body.addLayout(top_row)
 
         date_row = QHBoxLayout()
         date_row.addWidget(QLabel("Дата:"))
@@ -374,7 +411,7 @@ class OrderDetailWindow(QDialog):
             self.date_edit.setEnabled(False)
         date_row.addWidget(self.date_edit)
         date_row.addStretch()
-        main_layout.addLayout(date_row)
+        body.addLayout(date_row)
 
         self.table = QTableWidget()
         headers = ["ID", "Модель", "Производитель", "Размер", "Кол-во", "Сумма"]
@@ -383,17 +420,18 @@ class OrderDetailWindow(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        main_layout.addWidget(self.table, 1)
+        body.addWidget(self.table, 1)
 
         self.total_label = QLabel("Итого: 0.00 руб.")
-        self.total_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #70B2AF;")
+        self.total_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
         self.total_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        main_layout.addWidget(self.total_label)
+        body.addWidget(self.total_label)
 
         bottom = QHBoxLayout()
 
         if self.is_admin:
             save_btn = QPushButton("Сохранить")
+            save_btn.setStyleSheet(STYLE_PRIMARY)
             save_btn.clicked.connect(self.on_save_click)
             bottom.addWidget(save_btn)
 
@@ -407,7 +445,8 @@ class OrderDetailWindow(QDialog):
         back_btn.clicked.connect(self.accept)
         bottom.addWidget(back_btn)
 
-        main_layout.addLayout(bottom)
+        body.addLayout(bottom)
+        main_layout.addLayout(body)
         self.setLayout(main_layout)
 
     def reload_data(self):
@@ -500,35 +539,38 @@ class NewOrderWindow(QDialog):
 
     def make_interface(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(15, 15, 15, 15)
-        main_layout.setSpacing(8)
+        main_layout.setContentsMargins(0, 0, 0, 15)
+        main_layout.setSpacing(10)
 
-        title = QLabel("Новый заказ")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        main_layout.addWidget(title)
+        main_layout.addWidget(make_title("Новый заказ"))
+
+        body = QVBoxLayout()
+        body.setContentsMargins(15, 5, 15, 0)
+        body.setSpacing(8)
 
         client_row = QHBoxLayout()
         client_row.addWidget(QLabel("Клиент:"))
         self.client_input = QLineEdit()
         self.client_input.setPlaceholderText("Иванов Иван Иванович")
         client_row.addWidget(self.client_input, 1)
-        main_layout.addLayout(client_row)
+        body.addLayout(client_row)
 
-        main_layout.addWidget(QLabel("Поиск товара:"))
+        body.addWidget(QLabel("Поиск товара:"))
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Введите название...")
         self.search_input.textChanged.connect(self.filter_products)
-        main_layout.addWidget(self.search_input)
+        body.addWidget(self.search_input)
 
-        main_layout.addWidget(QLabel("Каталог:"))
+        body.addWidget(QLabel("Каталог:"))
 
         self.products_list = QListWidget()
         self.products_list.setMaximumHeight(150)
         self.products_list.itemDoubleClicked.connect(self.on_add_click)
-        main_layout.addWidget(self.products_list)
+        body.addWidget(self.products_list)
 
         add_row = QHBoxLayout()
         add_btn = QPushButton("Добавить в заказ")
+        add_btn.setStyleSheet(STYLE_PRIMARY)
         add_btn.clicked.connect(self.on_add_click)
         add_row.addWidget(add_btn)
 
@@ -537,25 +579,26 @@ class NewOrderWindow(QDialog):
         remove_btn.clicked.connect(self.on_remove_click)
         add_row.addWidget(remove_btn)
 
-        main_layout.addLayout(add_row)
+        body.addLayout(add_row)
 
-        main_layout.addWidget(QLabel("Позиции заказа:"))
+        body.addWidget(QLabel("Позиции заказа:"))
 
         self.cart_table = QTableWidget()
         headers = ["Наименование", "Размер", "Кол-во", "Цена", "Сумма"]
         self.cart_table.setColumnCount(5)
         self.cart_table.setHorizontalHeaderLabels(headers)
         self.cart_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        main_layout.addWidget(self.cart_table, 1)
+        body.addWidget(self.cart_table, 1)
 
         self.total_label = QLabel("Итого: 0.00 руб.")
-        self.total_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #70B2AF;")
+        self.total_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #70B2AF;")
         self.total_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        main_layout.addWidget(self.total_label)
+        body.addWidget(self.total_label)
 
         bottom = QHBoxLayout()
 
         save_btn = QPushButton("Сохранить")
+        save_btn.setStyleSheet(STYLE_PRIMARY)
         save_btn.clicked.connect(self.on_save_click)
         bottom.addWidget(save_btn)
 
@@ -564,7 +607,8 @@ class NewOrderWindow(QDialog):
         cancel_btn.clicked.connect(self.reject)
         bottom.addWidget(cancel_btn)
 
-        main_layout.addLayout(bottom)
+        body.addLayout(bottom)
+        main_layout.addLayout(body)
         self.setLayout(main_layout)
 
     def load_products(self):
