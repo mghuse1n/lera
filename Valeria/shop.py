@@ -42,21 +42,20 @@ class ProductCard(QFrame):
     def __init__(self, product, discount, parent=None):
         super().__init__(parent)
         self.product_id = product["id"]
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedWidth(260)
+        self.setFixedWidth(360)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(6)
 
         image = QLabel()
-        image.setFixedHeight(160)
+        image.setFixedHeight(200)
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         image.setPixmap(self.load_image(product.get("image_path")))
         layout.addWidget(image)
 
         name = QLabel(product.get("manufacturer", "") + " | " + product.get("name", ""))
-        name.setStyleSheet("font-size: 14px; font-weight: bold;")
+        name.setStyleSheet("font-size: 15px; font-weight: bold;")
         name.setWordWrap(True)
         name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(name)
@@ -67,41 +66,37 @@ class ProductCard(QFrame):
         layout.addWidget(cat)
 
         qty = int(product.get("total_quantity", 0))
-        qty_label = QLabel("Количество: " + str(qty))
+        qty_label = QLabel("В наличии: " + str(qty))
         qty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         if qty <= 3:
             qty_label.setStyleSheet("color: " + COLOR_LOW_STOCK + "; font-weight: bold;")
         layout.addWidget(qty_label)
-
-        composition = product.get("composition") or ""
-        composition = composition[:60]
-        comp = QLabel("Состав: " + composition)
-        comp.setStyleSheet("font-size: 11px; color: #888;")
-        comp.setWordWrap(True)
-        comp.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(comp)
-
-        layout.addStretch()
 
         base = float(product["price"])
         final = price_with_discount(base, discount)
 
         if discount > 0:
             price_text = (
-                "<span style='color:#999;text-decoration:line-through;font-size:11px;'>"
+                "<span style='color:#999;text-decoration:line-through;font-size:12px;'>"
                 + str(round(base, 2)) + " ₽</span><br>"
-                "<span style='color:#70B2AF;font-size:17px;font-weight:bold;'>"
+                "<span style='color:#70B2AF;font-size:20px;font-weight:bold;'>"
                 + str(round(final, 2)) + " ₽</span>"
             )
         else:
             price_text = (
-                "<span style='color:#70B2AF;font-size:17px;font-weight:bold;'>"
+                "<span style='color:#70B2AF;font-size:20px;font-weight:bold;'>"
                 + str(round(final, 2)) + " ₽</span>"
             )
 
         price = QLabel(price_text)
         price.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(price)
+
+        layout.addSpacing(5)
+
+        open_btn = QPushButton("Открыть")
+        open_btn.clicked.connect(self.on_open_click)
+        layout.addWidget(open_btn)
 
         if qty <= 3:
             self.setStyleSheet("""
@@ -110,7 +105,6 @@ class ProductCard(QFrame):
                     border-radius: 10px;
                     background-color: rgba(255, 128, 128, 30);
                 }
-                ProductCard:hover { background-color: rgba(255, 128, 128, 55); }
             """)
         else:
             self.setStyleSheet("""
@@ -119,17 +113,17 @@ class ProductCard(QFrame):
                     border-radius: 10px;
                     background-color: white;
                 }
-                ProductCard:hover { border: 2px solid #70B2AF; }
             """)
 
     def load_image(self, name):
-        size = 160
+        size_w = 330
+        size_h = 200
         if name:
             path = os.path.join(PRODUCTS_IMG_DIR, name)
             if os.path.exists(path):
                 pixmap = QPixmap(path)
                 pixmap = pixmap.scaled(
-                    size, size,
+                    size_w, size_h,
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation,
                 )
@@ -138,14 +132,14 @@ class ProductCard(QFrame):
         if os.path.exists(stub):
             pixmap = QPixmap(stub)
             pixmap = pixmap.scaled(
-                size, size,
+                size_w, size_h,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
             return pixmap
         return QPixmap()
 
-    def mousePressEvent(self, event):
+    def on_open_click(self):
         self.clicked.emit(self.product_id)
 
 
@@ -156,8 +150,8 @@ class ProductWindow(QDialog):
         self.product_id = product_id
         self.cart = cart
 
-        self.setWindowTitle("Чудо Обувь - Просмотр товара")
-        self.resize(900, 520)
+        self.setWindowTitle("Чудо Обувь - Товар")
+        self.resize(600, 750)
         self.setStyleSheet(STYLESHEET)
 
         self.product = get_one(SQL_PRODUCT, (product_id,))
@@ -176,39 +170,34 @@ class ProductWindow(QDialog):
     def make_interface(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(10)
 
-        title = QLabel("Просмотр товара")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        main_layout.addWidget(title)
-
-        columns = QHBoxLayout()
-        columns.setSpacing(20)
-
-        left = QVBoxLayout()
         image = QLabel()
-        image.setFixedSize(300, 300)
+        image.setFixedHeight(280)
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         image.setPixmap(self.load_image())
-        left.addWidget(image)
-        left.addStretch()
-        columns.addLayout(left)
+        main_layout.addWidget(image)
 
-        right = QVBoxLayout()
-        right.setSpacing(8)
-
-        name_text = "<b>" + self.product.get("manufacturer", "") + " | "
-        name_text = name_text + self.product.get("name", "") + "</b>"
+        name_text = self.product.get("manufacturer", "") + " | " + self.product.get("name", "")
         name = QLabel(name_text)
-        name.setStyleSheet("font-size: 16px;")
-        right.addWidget(name)
+        name.setStyleSheet("font-size: 18px; font-weight: bold;")
+        name.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name.setWordWrap(True)
+        main_layout.addWidget(name)
 
-        right.addWidget(QLabel("Категория: " + self.product.get("category", "")))
-        right.addWidget(QLabel("Состав: " + self.product.get("composition", "")))
+        cat = QLabel("Категория: " + self.product.get("category", ""))
+        cat.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(cat)
+
+        comp = QLabel("Состав: " + self.product.get("composition", ""))
+        comp.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        comp.setWordWrap(True)
+        main_layout.addWidget(comp)
 
         desc = QTextEdit(self.product.get("description") or "")
         desc.setReadOnly(True)
-        desc.setMaximumHeight(100)
-        right.addWidget(desc)
+        desc.setMaximumHeight(90)
+        main_layout.addWidget(desc)
 
         base = float(self.product["price"])
         final = price_with_discount(base, self.discount)
@@ -220,7 +209,10 @@ class ProductWindow(QDialog):
         else:
             price_text = "<b>Цена: " + str(round(base, 2)) + " ₽</b>"
 
-        right.addWidget(QLabel(price_text))
+        price_label = QLabel(price_text)
+        price_label.setStyleSheet("font-size: 16px;")
+        price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(price_label)
 
         size_row = QHBoxLayout()
         size_row.addWidget(QLabel("Размер:"))
@@ -233,25 +225,23 @@ class ProductWindow(QDialog):
             for size in self.sizes:
                 text = str(size["value"]) + " (доступно: " + str(size["quantity_available"]) + ")"
                 self.size_combo.addItem(text, (size["size_id"], size["quantity_available"]))
-        size_row.addWidget(self.size_combo)
+        size_row.addWidget(self.size_combo, 1)
 
         size_row.addWidget(QLabel("Кол-во:"))
         self.qty_spin = QSpinBox()
         self.qty_spin.setMinimum(1)
         self.qty_spin.setMaximum(1)
         size_row.addWidget(self.qty_spin)
-        size_row.addStretch()
 
         self.size_combo.currentIndexChanged.connect(self.on_size_changed)
         self.on_size_changed()
-        right.addLayout(size_row)
+        main_layout.addLayout(size_row)
 
-        right.addStretch()
+        main_layout.addStretch()
 
         buttons = QHBoxLayout()
-        buttons.addStretch()
 
-        self.add_btn = QPushButton("Добавить в заказ")
+        self.add_btn = QPushButton("Добавить")
         self.add_btn.clicked.connect(self.on_add_click)
         if len(self.sizes) == 0:
             self.add_btn.setEnabled(False)
@@ -262,11 +252,7 @@ class ProductWindow(QDialog):
         back_btn.clicked.connect(self.reject)
         buttons.addWidget(back_btn)
 
-        right.addLayout(buttons)
-
-        columns.addLayout(right, 1)
-        main_layout.addLayout(columns)
-
+        main_layout.addLayout(buttons)
         self.setLayout(main_layout)
 
     def load_image(self):
@@ -276,7 +262,7 @@ class ProductWindow(QDialog):
             if os.path.exists(path):
                 pixmap = QPixmap(path)
                 pixmap = pixmap.scaled(
-                    300, 300,
+                    500, 280,
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation,
                 )
@@ -285,7 +271,7 @@ class ProductWindow(QDialog):
         if os.path.exists(stub):
             pixmap = QPixmap(stub)
             pixmap = pixmap.scaled(
-                300, 300,
+                500, 280,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
@@ -325,7 +311,7 @@ class ProductWindow(QDialog):
                 found = True
 
         if found:
-            QMessageBox.information(self, "Информация", "Количество увеличено")
+            QMessageBox.information(self, "Готово", "Количество увеличено")
             self.accept()
             return
 
@@ -339,7 +325,7 @@ class ProductWindow(QDialog):
             "price": final_price,
         })
 
-        QMessageBox.information(self, "Информация", "Товар добавлен в заказ")
+        QMessageBox.information(self, "Готово", "Товар добавлен")
         self.accept()
 
 
@@ -351,7 +337,7 @@ class ShopWindow(QMainWindow):
         self.cart = []
 
         self.setWindowTitle("Чудо Обувь - Каталог")
-        self.resize(1280, 820)
+        self.resize(1100, 800)
         self.setStyleSheet(STYLESHEET)
 
         icon_path = os.path.join(RESOURCES_DIR, "icon.png")
@@ -370,40 +356,9 @@ class ShopWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
 
         main_layout.addWidget(self.make_top_bar())
-        main_layout.addWidget(self.make_action_bar())
         main_layout.addWidget(self.make_scroll(), 1)
 
     def make_top_bar(self):
-        bar = QWidget()
-        bar.setStyleSheet("background-color: white;")
-
-        row = QHBoxLayout(bar)
-        row.setContentsMargins(15, 10, 15, 10)
-
-        logo_path = os.path.join(RESOURCES_DIR, "logo.png")
-        if os.path.exists(logo_path):
-            logo = QLabel()
-            pixmap = QPixmap(logo_path)
-            pixmap = pixmap.scaledToHeight(60)
-            logo.setPixmap(pixmap)
-            row.addWidget(logo)
-
-        row.addStretch()
-
-        if self.user is not None:
-            fio = QLabel(self.user.get("full_name", ""))
-            fio.setStyleSheet("font-size: 14px; font-weight: bold;")
-            row.addWidget(fio)
-
-        if self.user is not None:
-            logout_btn = QPushButton("Выйти")
-            logout_btn.setStyleSheet(STYLE_SECONDARY)
-            logout_btn.clicked.connect(self.on_logout_click)
-            row.addWidget(logout_btn)
-
-        return bar
-
-    def make_action_bar(self):
         bar = QWidget()
         bar.setStyleSheet("background-color: " + COLOR_BG2 + ";")
 
@@ -411,20 +366,33 @@ class ShopWindow(QMainWindow):
         row.setContentsMargins(15, 10, 15, 10)
         row.setSpacing(10)
 
+        logo_path = os.path.join(RESOURCES_DIR, "logo.png")
+        if os.path.exists(logo_path):
+            logo = QLabel()
+            pixmap = QPixmap(logo_path)
+            pixmap = pixmap.scaledToHeight(50)
+            logo.setPixmap(pixmap)
+            row.addWidget(logo)
+
         if self.user is not None:
             row.addWidget(QLabel("Поиск:"))
             self.search_input = QLineEdit()
-            self.search_input.setPlaceholderText("Поиск по наименованию...")
+            self.search_input.setPlaceholderText("Поиск...")
             self.search_input.textChanged.connect(self.refresh_products)
             row.addWidget(self.search_input, 2)
 
             row.addWidget(QLabel("Категория:"))
             self.category_combo = QComboBox()
-            self.category_combo.addItem("Все категории", None)
+            self.category_combo.addItem("Все", None)
             self.category_combo.currentIndexChanged.connect(self.refresh_products)
             row.addWidget(self.category_combo, 1)
 
         row.addStretch()
+
+        if self.user is not None:
+            fio = QLabel(self.user.get("full_name", ""))
+            fio.setStyleSheet("font-weight: bold;")
+            row.addWidget(fio)
 
         if self.is_logged_in():
             self.cart_btn = QPushButton("Корзина")
@@ -432,9 +400,15 @@ class ShopWindow(QMainWindow):
             row.addWidget(self.cart_btn)
 
         if self.is_staff():
-            orders_btn = QPushButton("Управление заказами")
+            orders_btn = QPushButton("Заказы")
             orders_btn.clicked.connect(self.on_orders_click)
             row.addWidget(orders_btn)
+
+        if self.user is not None:
+            logout_btn = QPushButton("Выйти")
+            logout_btn.setStyleSheet(STYLE_SECONDARY)
+            logout_btn.clicked.connect(self.on_logout_click)
+            row.addWidget(logout_btn)
 
         return bar
 
@@ -476,7 +450,7 @@ class ShopWindow(QMainWindow):
     def fill_categories(self):
         self.category_combo.blockSignals(True)
         self.category_combo.clear()
-        self.category_combo.addItem("Все категории", None)
+        self.category_combo.addItem("Все", None)
 
         categories = set()
         for p in self.all_products:
@@ -523,7 +497,7 @@ class ShopWindow(QMainWindow):
             self.cards_grid.addWidget(QLabel("Товары не найдены"), 0, 0)
             return
 
-        columns = 3
+        columns = 2
         i = 0
         for product in products:
             discount = discount_for(product["id"])
