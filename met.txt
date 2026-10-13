@@ -1,0 +1,17 @@
+1.Создаем папку в домашней папке.
+2.Правая Кнопка Мыши (открыть консоль) в папке которую создали
+3.sudo dnf -y update && sudo dnf install python3-pip -y && sudo pip3 install pyqt6 psycopg2-binary openpyxl && sudo dnf install vscode && sudo dnf install -y dbeaver && sudo dnf install libreoffice && sudo dnf install -y postgresql postgresql-server postgresql-devel && postgres --version && sudo systemctl start postgresql12 && systemctl status postgresql12 --no-pager && git clone https://github.com/mghuse1n/lera.git && code .
+4.Открываем dbever
+если его нет то
+sudo dnf install -y dbeaver
+
+5. Нажать "Новое соединение"
+
+
+
+Это по ситуации.
+python -m venv .venv && source .venv/bin/activate
+
+Команды: Ctrl + A скопировать все, alt + x запустить запрос. 
+Сначала выполняем database.sql, потом python3 sql/import_all.py потом python3 main.py
+sudo dnf install pyqt6 psycopg2 openpyxl
