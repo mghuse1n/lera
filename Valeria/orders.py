@@ -85,24 +85,9 @@ class CartWindow(QDialog):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
 
-        title = QLabel("Корзина и оформление заказа")
+        title = QLabel("Корзина")
         title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
         main_layout.addWidget(title)
-
-        top = QHBoxLayout()
-
-        remove_btn = QPushButton("Удалить позицию")
-        remove_btn.setStyleSheet(STYLE_SECONDARY)
-        remove_btn.clicked.connect(self.on_remove_click)
-        top.addWidget(remove_btn)
-
-        clear_btn = QPushButton("Очистить")
-        clear_btn.setStyleSheet(STYLE_SECONDARY)
-        clear_btn.clicked.connect(self.on_clear_click)
-        top.addWidget(clear_btn)
-
-        top.addStretch()
-        main_layout.addLayout(top)
 
         self.table = QTableWidget()
         headers = ["ID", "Наименование", "Производитель", "Размер", "Кол-во", "Сумма"]
@@ -112,13 +97,27 @@ class CartWindow(QDialog):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         main_layout.addWidget(self.table, 1)
 
+        edit_row = QHBoxLayout()
+
+        remove_btn = QPushButton("Удалить позицию")
+        remove_btn.setStyleSheet(STYLE_SECONDARY)
+        remove_btn.clicked.connect(self.on_remove_click)
+        edit_row.addWidget(remove_btn)
+
+        clear_btn = QPushButton("Очистить")
+        clear_btn.setStyleSheet(STYLE_SECONDARY)
+        clear_btn.clicked.connect(self.on_clear_click)
+        edit_row.addWidget(clear_btn)
+
+        edit_row.addStretch()
+        main_layout.addLayout(edit_row)
+
         self.total_label = QLabel("Итого: 0.00 руб.")
         self.total_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #70B2AF;")
         self.total_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         main_layout.addWidget(self.total_label)
 
         bottom = QHBoxLayout()
-        bottom.addStretch()
 
         checkout_btn = QPushButton("Оформить заказ")
         checkout_btn.clicked.connect(self.on_checkout_click)
@@ -234,18 +233,9 @@ class OrdersWindow(QDialog):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
 
-        header = QHBoxLayout()
-
         title = QLabel("Список заказов")
         title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        header.addWidget(title)
-        header.addStretch()
-
-        create_btn = QPushButton("+ Создать заказ")
-        create_btn.clicked.connect(self.on_create_click)
-        header.addWidget(create_btn)
-
-        main_layout.addLayout(header)
+        main_layout.addWidget(title)
 
         self.table = QTableWidget()
         headers = ["Номер", "Дата", "Клиент", "Сумма"]
@@ -259,21 +249,23 @@ class OrdersWindow(QDialog):
 
         bottom = QHBoxLayout()
 
+        create_btn = QPushButton("Создать")
+        create_btn.clicked.connect(self.on_create_click)
+        bottom.addWidget(create_btn)
+
+        open_btn = QPushButton("Открыть")
+        open_btn.clicked.connect(self.on_open_click)
+        bottom.addWidget(open_btn)
+
+        delete_btn = QPushButton("Удалить")
+        delete_btn.setStyleSheet(STYLE_DANGER)
+        delete_btn.clicked.connect(self.on_delete_click)
+        bottom.addWidget(delete_btn)
+
         back_btn = QPushButton("Назад")
         back_btn.setStyleSheet(STYLE_SECONDARY)
         back_btn.clicked.connect(self.reject)
         bottom.addWidget(back_btn)
-
-        bottom.addStretch()
-
-        open_btn = QPushButton("Открыть заказ")
-        open_btn.clicked.connect(self.on_open_click)
-        bottom.addWidget(open_btn)
-
-        delete_btn = QPushButton("Удалить заказ")
-        delete_btn.setStyleSheet(STYLE_DANGER)
-        delete_btn.clicked.connect(self.on_delete_click)
-        bottom.addWidget(delete_btn)
 
         main_layout.addLayout(bottom)
         self.setLayout(main_layout)
@@ -354,17 +346,22 @@ class OrderDetailWindow(QDialog):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
 
-        header = QHBoxLayout()
+        self.title = QLabel("Просмотр заказа")
+        self.title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
+        main_layout.addWidget(self.title)
+
+        top_row = QHBoxLayout()
 
         self.header_label = QLabel("Заказ")
-        self.header_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        header.addWidget(self.header_label)
-        header.addStretch()
+        self.header_label.setStyleSheet("font-size: 15px; font-weight: bold;")
+        top_row.addWidget(self.header_label)
+
+        top_row.addStretch()
 
         self.client_label = QLabel("")
-        header.addWidget(self.client_label)
+        top_row.addWidget(self.client_label)
 
-        main_layout.addLayout(header)
+        main_layout.addLayout(top_row)
 
         date_row = QHBoxLayout()
         date_row.addWidget(QLabel("Дата:"))
@@ -396,7 +393,7 @@ class OrderDetailWindow(QDialog):
         bottom = QHBoxLayout()
 
         if self.is_admin:
-            save_btn = QPushButton("Сохранить изменения")
+            save_btn = QPushButton("Сохранить")
             save_btn.clicked.connect(self.on_save_click)
             bottom.addWidget(save_btn)
 
@@ -404,8 +401,6 @@ class OrderDetailWindow(QDialog):
             delete_btn.setStyleSheet(STYLE_DANGER)
             delete_btn.clicked.connect(self.on_delete_item_click)
             bottom.addWidget(delete_btn)
-
-        bottom.addStretch()
 
         back_btn = QPushButton("Назад")
         back_btn.setStyleSheet(STYLE_SECONDARY)
@@ -497,7 +492,7 @@ class NewOrderWindow(QDialog):
         self.all_products = []
 
         self.setWindowTitle("Чудо Обувь - Новый заказ")
-        self.resize(1100, 650)
+        self.resize(700, 800)
         self.setStyleSheet(STYLESHEET)
 
         self.make_interface()
@@ -506,94 +501,65 @@ class NewOrderWindow(QDialog):
     def make_interface(self):
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setSpacing(8)
 
-        title = QLabel("Создание нового заказа")
+        title = QLabel("Новый заказ")
         title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
         main_layout.addWidget(title)
-
-        main_row = QHBoxLayout()
-
-        left = QVBoxLayout()
-        left.addWidget(QLabel("Каталог:"))
-
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Введите название...")
-        self.search_input.textChanged.connect(self.filter_products)
-        left.addWidget(self.search_input)
-
-        self.products_list = QListWidget()
-        self.products_list.itemDoubleClicked.connect(self.on_add_click)
-        left.addWidget(self.products_list, 1)
-        main_row.addLayout(left, 1)
-
-        center = QVBoxLayout()
-        center.setSpacing(15)
-        center.addStretch()
-
-        add_btn = QPushButton("->")
-        add_btn.setFixedSize(55, 55)
-        add_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #70B2AF; color: white;
-                border: none; border-radius: 27px;
-                font-size: 20px; font-weight: bold;
-            }
-            QPushButton:hover { background-color: #5a9a97; }
-        """)
-        add_btn.clicked.connect(self.on_add_click)
-        center.addWidget(add_btn)
-
-        remove_btn = QPushButton("<-")
-        remove_btn.setFixedSize(55, 55)
-        remove_btn.setStyleSheet("""
-            QPushButton {
-                background-color: white; color: #70B2AF;
-                border: 2px solid #70B2AF; border-radius: 27px;
-                font-size: 20px; font-weight: bold;
-            }
-            QPushButton:hover { background-color: #D2F6E7; }
-        """)
-        remove_btn.clicked.connect(self.on_remove_click)
-        center.addWidget(remove_btn)
-        center.addStretch()
-        main_row.addLayout(center)
-
-        right = QVBoxLayout()
 
         client_row = QHBoxLayout()
         client_row.addWidget(QLabel("Клиент:"))
         self.client_input = QLineEdit()
         self.client_input.setPlaceholderText("Иванов Иван Иванович")
         client_row.addWidget(self.client_input, 1)
-        right.addLayout(client_row)
+        main_layout.addLayout(client_row)
 
-        right.addWidget(QLabel("Позиции:"))
+        main_layout.addWidget(QLabel("Поиск товара:"))
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Введите название...")
+        self.search_input.textChanged.connect(self.filter_products)
+        main_layout.addWidget(self.search_input)
+
+        main_layout.addWidget(QLabel("Каталог:"))
+
+        self.products_list = QListWidget()
+        self.products_list.setMaximumHeight(150)
+        self.products_list.itemDoubleClicked.connect(self.on_add_click)
+        main_layout.addWidget(self.products_list)
+
+        add_row = QHBoxLayout()
+        add_btn = QPushButton("Добавить в заказ")
+        add_btn.clicked.connect(self.on_add_click)
+        add_row.addWidget(add_btn)
+
+        remove_btn = QPushButton("Убрать из заказа")
+        remove_btn.setStyleSheet(STYLE_SECONDARY)
+        remove_btn.clicked.connect(self.on_remove_click)
+        add_row.addWidget(remove_btn)
+
+        main_layout.addLayout(add_row)
+
+        main_layout.addWidget(QLabel("Позиции заказа:"))
 
         self.cart_table = QTableWidget()
         headers = ["Наименование", "Размер", "Кол-во", "Цена", "Сумма"]
         self.cart_table.setColumnCount(5)
         self.cart_table.setHorizontalHeaderLabels(headers)
         self.cart_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        right.addWidget(self.cart_table, 1)
+        main_layout.addWidget(self.cart_table, 1)
 
         self.total_label = QLabel("Итого: 0.00 руб.")
         self.total_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #70B2AF;")
         self.total_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        right.addWidget(self.total_label)
-
-        main_row.addLayout(right, 1)
-        main_layout.addLayout(main_row, 1)
+        main_layout.addWidget(self.total_label)
 
         bottom = QHBoxLayout()
-        bottom.addStretch()
 
-        save_btn = QPushButton("Сохранить заказ")
-        save_btn.setMinimumHeight(40)
+        save_btn = QPushButton("Сохранить")
         save_btn.clicked.connect(self.on_save_click)
         bottom.addWidget(save_btn)
 
         cancel_btn = QPushButton("Отмена")
-        cancel_btn.setMinimumHeight(40)
         cancel_btn.setStyleSheet(STYLE_SECONDARY)
         cancel_btn.clicked.connect(self.reject)
         bottom.addWidget(cancel_btn)
