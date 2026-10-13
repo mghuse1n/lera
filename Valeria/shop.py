@@ -151,7 +151,7 @@ class ProductWindow(QDialog):
         self.cart = cart
 
         self.setWindowTitle("Чудо Обувь - Товар")
-        self.resize(600, 750)
+        self.resize(600, 780)
         self.setStyleSheet(STYLESHEET)
 
         self.product = get_one(SQL_PRODUCT, (product_id,))
@@ -172,15 +172,20 @@ class ProductWindow(QDialog):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(10)
 
+        title = QLabel("Просмотр товара")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(title)
+
         image = QLabel()
-        image.setFixedHeight(280)
+        image.setFixedHeight(260)
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         image.setPixmap(self.load_image())
         main_layout.addWidget(image)
 
         name_text = self.product.get("manufacturer", "") + " | " + self.product.get("name", "")
         name = QLabel(name_text)
-        name.setStyleSheet("font-size: 18px; font-weight: bold;")
+        name.setStyleSheet("font-size: 17px; font-weight: bold;")
         name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name.setWordWrap(True)
         main_layout.addWidget(name)
@@ -196,7 +201,7 @@ class ProductWindow(QDialog):
 
         desc = QTextEdit(self.product.get("description") or "")
         desc.setReadOnly(True)
-        desc.setMaximumHeight(90)
+        desc.setMaximumHeight(80)
         main_layout.addWidget(desc)
 
         base = float(self.product["price"])
@@ -262,7 +267,7 @@ class ProductWindow(QDialog):
             if os.path.exists(path):
                 pixmap = QPixmap(path)
                 pixmap = pixmap.scaled(
-                    500, 280,
+                    500, 260,
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation,
                 )
@@ -271,7 +276,7 @@ class ProductWindow(QDialog):
         if os.path.exists(stub):
             pixmap = QPixmap(stub)
             pixmap = pixmap.scaled(
-                500, 280,
+                500, 260,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
@@ -355,8 +360,23 @@ class ShopWindow(QMainWindow):
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
+        main_layout.addWidget(self.make_title())
         main_layout.addWidget(self.make_top_bar())
         main_layout.addWidget(self.make_scroll(), 1)
+
+    def make_title(self):
+        wrapper = QWidget()
+        wrapper.setStyleSheet("background-color: white;")
+
+        row = QHBoxLayout(wrapper)
+        row.setContentsMargins(15, 10, 15, 10)
+
+        title = QLabel("Каталог товаров")
+        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #70B2AF;")
+        row.addWidget(title)
+        row.addStretch()
+
+        return wrapper
 
     def make_top_bar(self):
         bar = QWidget()
