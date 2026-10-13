@@ -14,7 +14,7 @@ PRODUCTS_IMG_DIR = os.path.join(RESOURCES_DIR, 'products')
 DB_CONFIG = {
     'host': 'localhost',
     'port': 5432,
-    'database': 'chudo_obuv',
+    'database': 'postgres',
     'user': 'postgres',
     'password': '12345678',
 }
