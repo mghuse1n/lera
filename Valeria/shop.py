@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
 
 from config import (
     COLOR_BG2, COLOR_LOW_STOCK, PRODUCTS_IMG_DIR, RESOURCES_DIR,
-    STYLESHEET, STYLE_SECONDARY,
+    STYLESHEET, STYLE_PRIMARY, STYLE_SECONDARY,
 )
 from db import get_all, get_one
 from utils import discount_for, price_with_discount
@@ -35,6 +35,28 @@ SQL_SIZES = """
 """
 
 
+def make_title(text):
+    # Заголовок окна: тёмный текст + акцентная полоска слева
+    wrapper = QWidget()
+    wrapper.setStyleSheet("background-color: white;")
+
+    row = QHBoxLayout(wrapper)
+    row.setContentsMargins(15, 12, 15, 12)
+    row.setSpacing(10)
+
+    stripe = QLabel()
+    stripe.setFixedSize(5, 24)
+    stripe.setStyleSheet("background-color: #70B2AF; border-radius: 2px;")
+    row.addWidget(stripe)
+
+    label = QLabel(text)
+    label.setStyleSheet("font-size: 20px; color: #333;")
+    row.addWidget(label)
+    row.addStretch()
+
+    return wrapper
+
+
 class ProductCard(QFrame):
 
     clicked = pyqtSignal(int)
@@ -45,8 +67,8 @@ class ProductCard(QFrame):
         self.setFixedWidth(360)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(6)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(8)
 
         image = QLabel()
         image.setFixedHeight(200)
@@ -95,6 +117,7 @@ class ProductCard(QFrame):
         layout.addSpacing(5)
 
         open_btn = QPushButton("Открыть")
+        open_btn.setStyleSheet(STYLE_PRIMARY)
         open_btn.clicked.connect(self.on_open_click)
         layout.addWidget(open_btn)
 
@@ -102,7 +125,7 @@ class ProductCard(QFrame):
             self.setStyleSheet("""
                 ProductCard {
                     border: 2px solid #ff8080;
-                    border-radius: 10px;
+                    border-radius: 14px;
                     background-color: rgba(255, 128, 128, 30);
                 }
             """)
@@ -110,7 +133,7 @@ class ProductCard(QFrame):
             self.setStyleSheet("""
                 ProductCard {
                     border: 1px solid #e0e0e0;
-                    border-radius: 10px;
+                    border-radius: 14px;
                     background-color: white;
                 }
             """)
@@ -151,7 +174,7 @@ class ProductWindow(QDialog):
         self.cart = cart
 
         self.setWindowTitle("Чудо Обувь - Товар")
-        self.resize(600, 780)
+        self.resize(600, 800)
         self.setStyleSheet(STYLESHEET)
 
         self.product = get_one(SQL_PRODUCT, (product_id,))
@@ -169,40 +192,41 @@ class ProductWindow(QDialog):
 
     def make_interface(self):
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setContentsMargins(0, 0, 0, 15)
         main_layout.setSpacing(10)
 
-        title = QLabel("Просмотр товара")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #70B2AF;")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(title)
+        main_layout.addWidget(make_title("Просмотр товара"))
+
+        body = QVBoxLayout()
+        body.setContentsMargins(20, 5, 20, 0)
+        body.setSpacing(10)
 
         image = QLabel()
         image.setFixedHeight(260)
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         image.setPixmap(self.load_image())
-        main_layout.addWidget(image)
+        body.addWidget(image)
 
         name_text = self.product.get("manufacturer", "") + " | " + self.product.get("name", "")
         name = QLabel(name_text)
         name.setStyleSheet("font-size: 17px; font-weight: bold;")
         name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name.setWordWrap(True)
-        main_layout.addWidget(name)
+        body.addWidget(name)
 
         cat = QLabel("Категория: " + self.product.get("category", ""))
         cat.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(cat)
+        body.addWidget(cat)
 
         comp = QLabel("Состав: " + self.product.get("composition", ""))
         comp.setAlignment(Qt.AlignmentFlag.AlignCenter)
         comp.setWordWrap(True)
-        main_layout.addWidget(comp)
+        body.addWidget(comp)
 
         desc = QTextEdit(self.product.get("description") or "")
         desc.setReadOnly(True)
         desc.setMaximumHeight(80)
-        main_layout.addWidget(desc)
+        body.addWidget(desc)
 
         base = float(self.product["price"])
         final = price_with_discount(base, self.discount)
@@ -217,7 +241,7 @@ class ProductWindow(QDialog):
         price_label = QLabel(price_text)
         price_label.setStyleSheet("font-size: 16px;")
         price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(price_label)
+        body.addWidget(price_label)
 
         size_row = QHBoxLayout()
         size_row.addWidget(QLabel("Размер:"))
@@ -240,13 +264,14 @@ class ProductWindow(QDialog):
 
         self.size_combo.currentIndexChanged.connect(self.on_size_changed)
         self.on_size_changed()
-        main_layout.addLayout(size_row)
+        body.addLayout(size_row)
 
-        main_layout.addStretch()
+        body.addStretch()
 
         buttons = QHBoxLayout()
 
         self.add_btn = QPushButton("Добавить")
+        self.add_btn.setStyleSheet(STYLE_PRIMARY)
         self.add_btn.clicked.connect(self.on_add_click)
         if len(self.sizes) == 0:
             self.add_btn.setEnabled(False)
@@ -257,7 +282,9 @@ class ProductWindow(QDialog):
         back_btn.clicked.connect(self.reject)
         buttons.addWidget(back_btn)
 
-        main_layout.addLayout(buttons)
+        body.addLayout(buttons)
+
+        main_layout.addLayout(body)
         self.setLayout(main_layout)
 
     def load_image(self):
@@ -360,30 +387,16 @@ class ShopWindow(QMainWindow):
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        main_layout.addWidget(self.make_title())
+        main_layout.addWidget(make_title("Каталог товаров"))
         main_layout.addWidget(self.make_top_bar())
         main_layout.addWidget(self.make_scroll(), 1)
-
-    def make_title(self):
-        wrapper = QWidget()
-        wrapper.setStyleSheet("background-color: white;")
-
-        row = QHBoxLayout(wrapper)
-        row.setContentsMargins(15, 10, 15, 10)
-
-        title = QLabel("Каталог товаров")
-        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #70B2AF;")
-        row.addWidget(title)
-        row.addStretch()
-
-        return wrapper
 
     def make_top_bar(self):
         bar = QWidget()
         bar.setStyleSheet("background-color: " + COLOR_BG2 + ";")
 
         row = QHBoxLayout(bar)
-        row.setContentsMargins(15, 10, 15, 10)
+        row.setContentsMargins(15, 12, 15, 12)
         row.setSpacing(10)
 
         logo_path = os.path.join(RESOURCES_DIR, "logo.png")
@@ -416,11 +429,13 @@ class ShopWindow(QMainWindow):
 
         if self.is_logged_in():
             self.cart_btn = QPushButton("Корзина")
+            self.cart_btn.setStyleSheet(STYLE_PRIMARY)
             self.cart_btn.clicked.connect(self.on_cart_click)
             row.addWidget(self.cart_btn)
 
         if self.is_staff():
             orders_btn = QPushButton("Заказы")
+            orders_btn.setStyleSheet(STYLE_PRIMARY)
             orders_btn.clicked.connect(self.on_orders_click)
             row.addWidget(orders_btn)
 
